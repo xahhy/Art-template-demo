@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="resource/template-web.js"></script>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+
+    <link rel="stylesheet/less"  href="bower_components/bootstrap/less/bootstrap.less"/>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/less.js/2.5.3/less.min.js"></script>
+</head>
+<body>
+
+<template id="src">
+    <ul>
+        {{each items value key}}
+        <li>{{key}} ：{{value.title}}</li>
+        {{/each}}
+    </ul>
+</template>
+<template id="list">
+    <div class="row">
+    {{each items video key}}
+    <div class="col-md-3">
+    <div class="panel panel-default " style="border: 0px">
+        <a href='#'>
+            <img src="{{ video.image}}" width="200px"
+                 height="auto"/>
+            <span class="video-resolution-text">{{ video.definition }}</span>
+            <div class="panel-heading">
+                <li class="title">{{ video.title }}</li>
+
+                <li class="duration">
+                    DUR:{{ video.duration }}
+                </li>
+            </div>
+        </a>
+    </div>
+    </div>
+    {{/each}}
+    </div>
+</template>
+<div id="content"></div>
+<script src="js/app.js"></script>
+</body>
+</html>
