@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-{% load staticfiles %}
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -40,9 +39,6 @@
     <script src="resource/dist/js/adminlte.min.js"></script>
     <!-- AdminLTE for demo purposes -->
     <!-- <script src="../../dist/js/demo.js"></script> -->
-    {% block scripts %}
-
-    {% endblock scripts %}
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
 
@@ -91,7 +87,7 @@
                     <!-- Tasks: style can be found in dropdown.less -->
 
                     <li>
-                        <a href="/">Home</a>
+                        <a onclick="click_home()" href="javascript:void(0);">Home</a>
                     </li>
                     <!-- User Account: style can be found in dropdown.less -->
                     <li class="dropdown user user-menu">
@@ -148,13 +144,12 @@
 
             {% block search_field %}
             <!--search start-->
-            <form action="/list/" method="get" class="sidebar-form">
+            <form id="search-form" class="sidebar-form">
                 <div class="input-group">
-                    <input type="text" name="search_word" class="form-control" placeholder="Search..."/>
+                    <input type="text" name="search" class="form-control" placeholder="Search..."/>
                     <span class="input-group-btn"><button type="submit" name="search" id="search-btn"
                                                           class="btn btn-flat"><i
                             class="fa fa-search"></i></button></span>
-                    <input id="search-year" type="text" name="year" class="form-control" style="display: none;"/>
                 </div>
             </form>
             <!--search end-->
@@ -162,57 +157,33 @@
 
 
             <!-- /.search form -->
-            <!-- sidebar menu: : style can be found in sidebar.less -->
             <ul id="category-list" class="sidebar-menu" data-widget="tree">
                 <li class="header" id="all_video"><a href="#"><i class="fa fa-home"></i> <span>All Videos</span></a>
                 </li>
-
-                <!--{% block category_list %}-->
-                <!--{% for item in categorys %}-->
-                <!--{% if item.name == title %}-->
-                <!--<li class="active" id="video_{{ item.name }}">-->
-                <!--{% else %}-->
-                <!--<li class="" id="video_{{ item.name }}">-->
-                <!--{% endif %}-->
-
-                <!--<a href="{% url 'vod:list-detail' item.name %}">-->
-                <!--<i class="fa fa-book"></i> <span>{{ item.name }}</span>-->
-                <!--</a>-->
-                <!--&lt;!&ndash;<ul class="treeview-menu">-->
-                <!--<li><a href=""><i class="fa fa-circle-o"></i>Hello</a></li>-->
-                <!--</ul>&ndash;&gt;-->
-                <!--</li>-->
-                <!--{% endfor %}-->
-                <!--{% endblock %}-->
-
-                <!-- <li><a href="{% url 'vod:login"><i class="fa fa-sign-in"></i> <span>Login Page</span></a></li> -->
             </ul>
         </section>
-        <!-- /.sidebar -->
     </aside>
 
     <!-- =============================================== -->
 
     <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
+    <div class="content-wrapper" id="content-field">
         <!-- Content Header (Page header) -->
         <!--{% block content-header %}-->
-        <section class="content-header">
-            <h1>
-                Blank page
-                <small>it all starts here</small>
-            </h1>
-            <ol class="breadcrumb">
-                <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-                <li><a href="#">Examples</a></li>
-                <li class="active">Blank page</li>
-            </ol>
+        <section id="breadcrumb-list" class="content-header">
+            <!--<h1>-->
+            <!--</h1>-->
+            <!--<ol class="breadcrumb">-->
+                <!--<li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>-->
+                <!--<li><a href="#">Examples</a></li>-->
+                <!--<li class="active">Blank page</li>-->
+            <!--</ol>-->
         </section>
         <!--{% endblock %}-->
 
         <!-- Main content -->
         <section class="content">
-            <div class="col-md-12">
+            <div class="col-md-12" style="display: none;">
                 <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
                     开始演示模态框
                 </button>
@@ -255,7 +226,7 @@
             </div>
             <div class="container-fluid">
                 <div id="video-list" class="row">
-
+                    {{ include 'video-list-template'}}
                 </div>
             </div>
 
@@ -307,8 +278,61 @@
 
 <template id="year-list-template">
     {{each years year key}}
-        <li onclick="click_year(this)"><a href="#">{{ year }}</a></li>
+    <li onclick="click_year(this)"><a href="#">{{ year }}</a></li>
     {{/each}}
+</template>
+
+<template id="home-list-template">
+    {{ each pre_categorys category key}}
+    <div class="box box-default">
+        <div class="box-header with-border">
+            <div class="box-title">
+                <span class="glyphicon glyphicon-th"></span>
+                {{ category.category }}
+            </div>
+            <div class="box-tools pull-right">
+                <a href="#" onclick="click_more(this)" name="{{category.category}}">
+                    <i class="fa fa-clone"></i>
+                    <small>More...</small>
+                </a>
+                <button class="btn btn-box-tool" type="button" data-toggle="collapse" data-target="#{{category.category}}">
+                    <i class="fa fa-minus"></i>
+                </button>
+            </div>
+        </div>
+        <div class="box-body collapse in" id="{{ category.category }}">
+            <div class="row">
+                {{each category.videos video key}}
+                <div class="col-xs-4 col-md-2 col-lg-2 each-video">
+                    <div class="panel panel-default " style="border: 0px">
+                        <a href='#'>
+                            <img src="{{server_url}}{{ video.image}}" width="100%"
+                                 height="auto"/>
+                            <span class="video-resolution-text">{{ video.definition }}</span>
+                            <div class="panel-heading">
+                                <li class="title">{{ video.title }}</li>
+                                <li class="duration">
+                                    DUR:{{ video.duration }}
+                                </li>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+    {{/each}}
+</template>
+
+<template id="breadcrumb-list-template">
+    <h1>
+        {{ title }}{{if year }}<i class="fa fa-fw fa-angle-right"></i>{{ year }} {{/if}}
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="#" onclick="click_home()"><i class="fa fa-dashboard"></i> Home</a></li>
+        {{if title != 'Home'}}<li><a href="#" onclick="click_more(this)" name="{{title}}">{{ title }}</a></li>{{/if}}
+    </ol>
 </template>
 <script src="resource/js/app.js"></script>
 </body>

@@ -1,12 +1,15 @@
 var info;
-var server_url = 'http://127.0.0.1:8000';
+var server_url = 'http://192.168.0.145:8000';
 var api_video_list_url = server_url + '/api?format=json';
 var api_categary_list_url = server_url + '/api/category?format=json';
+var api_home_list_url = server_url + '/api/home?format=json';
 var api_year_list_url = server_url + '/api/year?format=json';
 var sel_category_list = $("#category-list");
 var sel_video_list = $("#video-list");
 var sel_year_list = $("#year-list");
-
+var sel_breadcrumb_list = $("#breadcrumb-list");
+var cur_year=null;
+var cur_category=null;
 
 function render_category_list() {
     $.getJSON(api_categary_list_url, {}, function (result) {
@@ -22,14 +25,43 @@ function render_category_list() {
     });
 }
 
-function render_video_list(category) {
+function render_video_list(category,year) {
     content = {
-        'category' : category
+        'category': category,
+        'year'  : year
     };
     $.getJSON(api_video_list_url, content, function (result) {
-        console.log(result);
         var html = template("video-list-template", {
             videos: result.results,
+            server_url: server_url
+        });
+        sel_video_list.html(html);
+
+        //add click function
+        // sel_category_list.find("> li").each(function () {
+        //     $(this).click(click_category);
+        // })
+    });
+}
+
+function render_breadcrumb_list(title) {
+    if(title === undefined)
+        title='All Videos';
+    console.log(cur_year);
+    var html = template('breadcrumb-list-template',{
+        title   : title,
+        year    : cur_year
+    });
+    sel_breadcrumb_list.html(html);
+}
+
+function render_home_list() {
+    content = {};
+    $.getJSON(api_home_list_url, content, function (result) {
+        console.log("home");
+        console.log(result);
+        var html = template("home-list-template", {
+            pre_categorys: result,
             server_url: server_url
         });
         sel_video_list.html(html);
@@ -38,12 +70,13 @@ function render_video_list(category) {
         //     $(this).click(click_category);
         // })
     });
+    render_breadcrumb_list("Home");
 }
 function render_year_list() {
     $.getJSON(api_year_list_url, {}, function (result) {
         console.log(result);
         var html = template("year-list-template", {
-            years: result,
+            years: result
         });
         sel_year_list.html(html);
         //add click function
@@ -72,23 +105,33 @@ function click_category() {
 
     //render the video list
     var category = $(this).attr('name');
+    cur_category = category;
+    clear_cur_year();
     render_video_list(category);
+
+    //render the breadcrumb and title
+
+    render_breadcrumb_list(category);
+
 }
 function click_year(obj) {
-    year = $(obj).text();
-    cur_path = window.location.pathname;
-    search = window.location.search;
-    if (cur_path === '/') {
-        cur_path = '/list/'
-    }
-    if (cur_path.indexOf("/vod/") >= 0) {
-        cur_path = '/list/'
-    }
-    if (search === "") {
-        window.location.href = cur_path + "?year=" + year;
-    } else {
-        window.location.href = cur_path + search + "&year=" + year;
-    }
+    cur_year = $(obj).text();
+    render_video_list(cur_category,cur_year);
+    render_breadcrumb_list(cur_category);
+}
+function click_more(obj) {
+    category = $(obj).attr("name");
+    sel_category_list.find('[name="' + category + '"]').click();
+}
+function clear_cur_year() {
+    cur_year = null;
+}
+function click_home() {
+    sel_category_list.find(".active").removeClass("active");
+    cur_category = null;
+    clear_cur_year();
+
+    render_home_list();
 }
 //$("ul.pagination").children().map(function(){
 //     console.log($(this).find("a").attr("href"));
@@ -123,8 +166,29 @@ $(function () {
         $("#goto-menue").append(item);
     }
 
+    $("button[name='search']").click(function () {
+        $("#search-form").submit(function(e) {
+
+            var url = api_video_list_url; // the script where you handle the form input.
+            // data = $("#search-form").serializeArray().append("year":cur_year);
+            formdata = new FormData($('#search-form')[0]);
+            formdata.append("year",cur_year);
+            $.ajax({
+                type: "GET",
+                url: url,
+                data:formdata, // serializes the form's elements.
+                success: function(data)
+                {
+                    console.log(data); // show response from the php script.
+                }
+            });
+            e.preventDefault(); // avoid to execute the actual submit of the form.
+        });
+    });
+
     render_category_list();
-    render_video_list();
+    // render_video_list();
+    render_home_list();
     render_year_list();
 
 });

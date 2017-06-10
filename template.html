@@ -1,0 +1,81 @@
+<template id="category-list-template">
+    <li class="header"><a href="#"><i class="fa fa-home"></i> <span>All Videos</span></a>
+    </li>
+    {{each categories item key}}
+    <li class="" name="{{ item.name }}">
+        <a href="#">
+            <i class="fa fa-book"></i> <span>{{ item.name }}</span>
+        </a>
+    </li>
+    {{/each}}
+</template>
+
+<template id="video-list-template">
+    {{each videos video key}}
+    <div class="col-xs-4 col-md-3 col-lg-2 each-video">
+        <div class="panel panel-default " style="border: 0px">
+            <a href='#'>
+                <img src="{{server_url}}{{ video.image}}" width="100%"
+                     height="auto"/>
+                <span class="video-resolution-text">{{ video.definition }}</span>
+                <div class="panel-heading">
+                    <li class="title">{{ video.title }}</li>
+
+                    <li class="duration">
+                        DUR:{{ video.duration }}
+                    </li>
+                </div>
+            </a>
+        </div>
+    </div>
+    {{/each}}
+</template>
+
+<template id="year-list-template">
+    {{each years year key}}
+    <li onclick="click_year(this)"><a href="#">{{ year }}</a></li>
+    {{/each}}
+</template>
+
+<template id="home-list-template">
+    {{ each pre_categorys category key}}
+    <div class="box box-default collapse-box">
+        <div class="box-header with-border">
+            <div class="box-title">
+                <span class="glyphicon glyphicon-th"></span>
+                {{ category.category }}
+            </div>
+            <div class="box-tools pull-right">
+                <a href="#" onclick="click_more(this)" name="{{category.category}}">
+                    <i class="fa fa-clone"></i>
+                    <small>More...</small>
+                </a>
+                <button class="btn btn-box-tool" type="button" data-widget="collapse">
+                    <i class="fa fa-minus"></i>
+                </button>
+            </div>
+        </div>
+        <div class="box-body">
+            <div class="row">
+                {{each category.videos video key}}
+                <div class="col-xs-4 col-md-2 col-lg-2 each-video">
+                    <div class="panel panel-default " style="border: 0px">
+                        <a href='#'>
+                            <img src="{{server_url}}{{ video.image}}" width="100%"
+                                 height="auto"/>
+                            <span class="video-resolution-text">{{ video.definition }}</span>
+                            <div class="panel-heading">
+                                <li class="title">{{ video.title }}</li>
+                                <li class="duration">
+                                    DUR:{{ video.duration }}
+                                </li>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+    {{/each}}
+</template>
