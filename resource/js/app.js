@@ -8,9 +8,16 @@ var sel_category_list = $("#category-list");
 var sel_video_list = $("#video-list");
 var sel_year_list = $("#year-list");
 var sel_breadcrumb_list = $("#breadcrumb-list");
-var cur_year=null;
-var cur_category=null;
+var sel_pagination_list = $("#m-pagination");
 
+var cur_year="";
+var cur_category="";
+var year_title = new Vue({
+    el: '#year-title',
+    data: {
+        year: "Year"
+    }
+});
 function render_category_list() {
     $.getJSON(api_categary_list_url, {}, function (result) {
         console.log(result);
@@ -25,27 +32,40 @@ function render_category_list() {
     });
 }
 
-function render_video_list(category,year) {
+function render_video_list(category,year,page) {
     content = {
         'category': category,
-        'year'  : year
+        'year'  : year,
+        'page'  : page
     };
     $.getJSON(api_video_list_url, content, function (result) {
         var html = template("video-list-template", {
-            videos: result.results,
-            server_url: server_url
+            videos      : result.results,
+            cur_page    : result.cur_page,
+            num_pages   : result.num_pages,
+            page_range  : result.page_range,
+            previous    : result.previous,
+            next        : result.next,
+            server_url  : server_url
         });
         sel_video_list.html(html);
 
         //add click function
-        // sel_category_list.find("> li").each(function () {
-        //     $(this).click(click_category);
-        // })
+        $("#m-pagination").find("[name]").each(function () {
+            $(this).click(click_page);
+        });
+
+        for(var page=1; page <= result.num_pages;page++){
+            var item = '<li><a href="javascript:void(0);" name="'+page+'">'+page+'</a></li>';
+            var $list = $(item);
+            $("#goto-menue").append($list);
+            $list.find("a").click(click_page);
+        }
     });
 }
 
 function render_breadcrumb_list(title) {
-    if(title === undefined)
+    if(title ==="")
         title='All Videos';
     console.log(cur_year);
     var html = template('breadcrumb-list-template',{
@@ -105,6 +125,8 @@ function click_category() {
 
     //render the video list
     var category = $(this).attr('name');
+    if(category === null || category ===undefined)
+        category = "";
     cur_category = category;
     clear_cur_year();
     render_video_list(category);
@@ -114,28 +136,35 @@ function click_category() {
     render_breadcrumb_list(category);
 
 }
+
 function click_year(obj) {
-    cur_year = $(obj).text();
+    cur_year = $(obj).attr("name");
+    year_title.year = cur_year===""?"Year":cur_year;
     render_video_list(cur_category,cur_year);
     render_breadcrumb_list(cur_category);
 }
+
 function click_more(obj) {
     category = $(obj).attr("name");
     sel_category_list.find('[name="' + category + '"]').click();
 }
+
 function clear_cur_year() {
-    cur_year = null;
+    cur_year = "";
+    year_title.year="Year"
 }
+
 function click_home() {
     sel_category_list.find(".active").removeClass("active");
-    cur_category = null;
+    cur_category = "";
     clear_cur_year();
-
     render_home_list();
 }
-//$("ul.pagination").children().map(function(){
-//     console.log($(this).find("a").attr("href"));
-// })
+
+function click_page() {
+    var page_ = $(this).attr("name");
+    render_video_list(cur_category,cur_year,page_);
+}
 function click_pagination() {
     text = $(this).text();
     console.log(text);
@@ -166,29 +195,36 @@ $(function () {
         $("#goto-menue").append(item);
     }
 
-    $("button[name='search']").click(function () {
+    // $("button[name='search']").click(function () {
         $("#search-form").submit(function(e) {
-
             var url = api_video_list_url; // the script where you handle the form input.
-            // data = $("#search-form").serializeArray().append("year":cur_year);
-            formdata = new FormData($('#search-form')[0]);
-            formdata.append("year",cur_year);
+            data = $("#search-form").serialize();
+            console.log(data);
+            data += "&year="+cur_year;
+            data += "&category="+cur_category;
             $.ajax({
                 type: "GET",
                 url: url,
-                data:formdata, // serializes the form's elements.
-                success: function(data)
+                data:data, // serializes the form's elements.
+                success: function(result)
                 {
-                    console.log(data); // show response from the php script.
+                    var html = template("video-list-template", {
+                        videos: result.results,
+                        server_url: server_url
+                    });
+                    sel_video_list.html(html);
                 }
             });
             e.preventDefault(); // avoid to execute the actual submit of the form.
         });
-    });
+    // });
 
     render_category_list();
     // render_video_list();
     render_home_list();
     render_year_list();
 
+    $("[name='breadcrumb-home']").each(function () {
+        $(this).click(click_home);
+    })
 });

@@ -37,6 +37,7 @@
     <!-- <script src="../../plugins/fastclick/fastclick.js"></script> -->
     <!-- AdminLTE App -->
     <script src="resource/dist/js/adminlte.min.js"></script>
+    <script src="bower_components/vue/dist/vue.js"></script>
     <!-- AdminLTE for demo purposes -->
     <!-- <script src="../../dist/js/demo.js"></script> -->
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -68,7 +69,7 @@
             </div>
             <div class="nav navbar-nav">
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Year<span
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false" id="year-title">{{year}}<span
                             class="caret"></span></a>
                     <ul id="year-list" class="dropdown-menu" role="menu">
                         <!--{% for year in years %}-->
@@ -87,7 +88,7 @@
                     <!-- Tasks: style can be found in dropdown.less -->
 
                     <li>
-                        <a onclick="click_home()" href="javascript:void(0);">Home</a>
+                        <a href="javascript:void(0);" name="breadcrumb-home">Home</a>
                     </li>
                     <!-- User Account: style can be found in dropdown.less -->
                     <li class="dropdown user user-menu">
@@ -142,18 +143,16 @@
             </div>
             <!-- search form -->
 
-            {% block search_field %}
             <!--search start-->
             <form id="search-form" class="sidebar-form">
                 <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Search..."/>
+                    <input type="text" name="search" class="form-control" placeholder="Search..." value=""/>
                     <span class="input-group-btn"><button type="submit" name="search" id="search-btn"
                                                           class="btn btn-flat"><i
                             class="fa fa-search"></i></button></span>
                 </div>
             </form>
             <!--search end-->
-            {% endblock %}
 
 
             <!-- /.search form -->
@@ -163,24 +162,11 @@
             </ul>
         </section>
     </aside>
-
     <!-- =============================================== -->
-
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper" id="content-field">
-        <!-- Content Header (Page header) -->
-        <!--{% block content-header %}-->
         <section id="breadcrumb-list" class="content-header">
-            <!--<h1>-->
-            <!--</h1>-->
-            <!--<ol class="breadcrumb">-->
-                <!--<li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>-->
-                <!--<li><a href="#">Examples</a></li>-->
-                <!--<li class="active">Blank page</li>-->
-            <!--</ol>-->
         </section>
-        <!--{% endblock %}-->
-
         <!-- Main content -->
         <section class="content">
             <div class="col-md-12" style="display: none;">
@@ -229,7 +215,6 @@
                     {{ include 'video-list-template'}}
                 </div>
             </div>
-
         </section>
         <!-- /.content -->
     </div>
@@ -256,6 +241,7 @@
 </template>
 
 <template id="video-list-template">
+    <!--video list zone-->
     {{each videos video key}}
     <div class="col-xs-4 col-md-3 col-lg-2 each-video">
         <div class="panel panel-default " style="border: 0px">
@@ -274,11 +260,54 @@
         </div>
     </div>
     {{/each}}
+    <!--end video list zone-->
+    <!--pagination zone-->
+    <div class="col-xs-12 col-md-12 col-lg-12 text-center ">
+        <ul class="pagination" id="m-pagination">
+
+            {{ if previous }}
+            <li><a href='javascript:void(0);' name="{{cur_page-1}}"><<</a></li>
+            {{/if}}
+
+            <li><a href='javascript:void(0);' name="1">First</a></li>
+
+            {{ each page_range page key}}
+                {{ if page == cur_page }}
+                    <li class="active"><a href='javascript:void(0);' name="{{page}}">{{ page }}</a></li>
+                {{ else }}
+                    <li><a href='javascript:void(0);' name="{{page}}">{{ page }}</a></li>
+                {{/if}}
+            {{/each}}
+
+            <li><a href='javascript:void(0);' name="{{num_pages}}">Last</a></li>
+            {{ if next }}
+            <li><a href='javascript:void(0);' name="{{ cur_page+1 }}">>></a></li>
+            {{/if}}
+            <li><span>Totel {{ num_pages }}.</span></li>
+            <!-- </span> -->
+        </ul>
+        <!-- <span class="step-links"> -->
+    </div>
+
+    <div class="col-xs-12 col-md-12 col-lg-12 text-center ">
+        <div class="btn-group dropup">
+            <button type="button" class="btn btn-default">Go to</button>
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul id="goto-menue" class="dropdown-menu" role="menu">
+                <!-- Dropdown menu links -->
+            </ul>
+        </div>
+    </div>
+    <!--end pagination zone-->
 </template>
 
 <template id="year-list-template">
+    <li onclick="click_year(this)" name=""><a href="#">All years</a></li>
     {{each years year key}}
-    <li onclick="click_year(this)"><a href="#">{{ year }}</a></li>
+    <li onclick="click_year(this)" name="{{year}}"><a href="#">{{ year }}</a></li>
     {{/each}}
 </template>
 
@@ -295,7 +324,8 @@
                     <i class="fa fa-clone"></i>
                     <small>More...</small>
                 </a>
-                <button class="btn btn-box-tool" type="button" data-toggle="collapse" data-target="#{{category.category}}">
+                <button class="btn btn-box-tool" type="button" data-toggle="collapse"
+                        data-target="#{{category.category}}">
                     <i class="fa fa-minus"></i>
                 </button>
             </div>
@@ -330,11 +360,14 @@
         {{ title }}{{if year }}<i class="fa fa-fw fa-angle-right"></i>{{ year }} {{/if}}
     </h1>
     <ol class="breadcrumb">
-        <li><a href="#" onclick="click_home()"><i class="fa fa-dashboard"></i> Home</a></li>
-        {{if title != 'Home'}}<li><a href="#" onclick="click_more(this)" name="{{title}}">{{ title }}</a></li>{{/if}}
+        <li><a href="#" name="breadcrumb-home" onclick="click_home()"><i class="fa fa-dashboard"></i> Home</a></li>
+        {{if title != 'Home'}}
+        <li><a href="#" onclick="click_more(this)" name="{{title}}">{{ title }}</a></li>
+        {{/if}}
     </ol>
 </template>
 <script src="resource/js/app.js"></script>
+
 </body>
 </html>
 
