@@ -1,21 +1,37 @@
 var info;
-var server_url = 'http://192.168.0.145:8000';
-var api_video_list_url = server_url + '/api?format=json';
-var api_categary_list_url = server_url + '/api/category?format=json';
-var api_home_list_url = server_url + '/api/home?format=json';
-var api_year_list_url = server_url + '/api/year?format=json';
+var server_url = 'http://127.0.0.1:8000';
+var api_base_url = server_url + '/api/';
+var api_video_list_url = api_base_url + '?format=json';
+var api_categary_list_url = api_base_url + 'category?format=json';
+var api_home_list_url = api_base_url + 'home?format=json';
+var api_year_list_url = api_base_url + 'year?format=json';
 var sel_category_list = $("#category-list");
 var sel_video_list = $("#video-list");
 var sel_year_list = $("#year-list");
 var sel_breadcrumb_list = $("#breadcrumb-list");
 var sel_pagination_list = $("#m-pagination");
 
-var cur_year="";
-var cur_category="";
+var cur_year = "";
+var cur_category = "";
 var year_title = new Vue({
     el: '#year-title',
     data: {
         year: "Year"
+    }
+});
+var refresh_btn = new Vue({
+    el: "#nav-refresh",
+    data: {
+        video_id: "",
+        see :false
+    }
+});
+var bread_crumb = new Vue({
+    el: '#breadcrumb-list',
+    data: {
+        year: "",
+        title: 'Home',
+        video: ""
     }
 });
 function render_category_list() {
@@ -32,47 +48,39 @@ function render_category_list() {
     });
 }
 
-function render_video_list(category,year,page) {
-    content = {
-        'category': category,
-        'year'  : year,
-        'page'  : page
-    };
-    $.getJSON(api_video_list_url, content, function (result) {
-        var html = template("video-list-template", {
-            videos      : result.results,
-            cur_page    : result.cur_page,
-            num_pages   : result.num_pages,
-            page_range  : result.page_range,
-            previous    : result.previous,
-            next        : result.next,
-            server_url  : server_url
+function render_video_detail(video_id) {
+    var url = api_base_url + video_id;
+    $.getJSON(url, {'format':'json'}, function (result) {
+        console.log(result);
+        var html = template("video-detail-template", {
+            video: result
         });
         sel_video_list.html(html);
+        bread_crumb.title = result.title;
+    });
+}
 
-        //add click function
-        $("#m-pagination").find("[name]").each(function () {
-            $(this).click(click_page);
-        });
-
-        for(var page=1; page <= result.num_pages;page++){
-            var item = '<li><a href="javascript:void(0);" name="'+page+'">'+page+'</a></li>';
-            var $list = $(item);
-            $("#goto-menue").append($list);
-            $list.find("a").click(click_page);
-        }
+function render_video_list(category, year, page) {
+    content = {
+        'category': category,
+        'year': year,
+        'page': page
+    };
+    $.getJSON(api_video_list_url, content, function (result) {
+        handle_result(result);
     });
 }
 
 function render_breadcrumb_list(title) {
-    if(title ==="")
-        title='All Videos';
-    console.log(cur_year);
-    var html = template('breadcrumb-list-template',{
-        title   : title,
-        year    : cur_year
-    });
-    sel_breadcrumb_list.html(html);
+    if (title === "")
+        title = 'All Videos';
+    bread_crumb.title = title;
+    bread_crumb.year = cur_year;
+    // var html = template('breadcrumb-list-template',{
+    //     title   : title,
+    //     year    : cur_year
+    // });
+    // sel_breadcrumb_list.html(html);
 }
 
 function render_home_list() {
@@ -106,6 +114,29 @@ function render_year_list() {
     });
 }
 
+function handle_result(result) {
+    var html = template("video-list-template", {
+        videos: result.results,
+        cur_page: result.cur_page,
+        num_pages: result.num_pages,
+        page_range: result.page_range,
+        previous: result.previous,
+        next: result.next,
+        server_url: server_url
+    });
+    sel_video_list.html(html);
+
+    //add pagination click function
+    $("#m-pagination").find("[name]").each(function () {
+        $(this).click(click_page);
+    });
+    for (var page = 1; page <= result.num_pages; page++) {
+        var item = '<li><a href="javascript:void(0);" name="' + page + '">' + page + '</a></li>';
+        var $list = $(item);
+        $("#goto-menue").append($list);
+        $list.find("a").click(click_page);
+    }
+}
 // return the current category name
 function get_current_category() {
     cur_ = sel_category_list.find(".active span");
@@ -125,7 +156,7 @@ function click_category() {
 
     //render the video list
     var category = $(this).attr('name');
-    if(category === null || category ===undefined)
+    if (category === null || category === undefined)
         category = "";
     cur_category = category;
     clear_cur_year();
@@ -136,14 +167,25 @@ function click_category() {
     render_breadcrumb_list(category);
 
 }
+function click_video(obj) {
+    video_id = $(obj).attr("video-id");
+    console.log("video id=" + video_id);
+    render_video_detail(video_id);
 
+    refresh_btn.video_id = video_id;
+    refresh_btn.see = true;
+}
 function click_year(obj) {
     cur_year = $(obj).attr("name");
-    year_title.year = cur_year===""?"Year":cur_year;
-    render_video_list(cur_category,cur_year);
+    year_title.year = cur_year === "" ? "Year" : cur_year;
+    render_video_list(cur_category, cur_year);
     render_breadcrumb_list(cur_category);
 }
-
+function click_refresh(obj) {
+    cur_id = $(obj).attr("video-id");
+    console.log("cur video id="+cur_id);
+    render_video_detail(cur_id);
+}
 function click_more(obj) {
     category = $(obj).attr("name");
     sel_category_list.find('[name="' + category + '"]').click();
@@ -151,7 +193,7 @@ function click_more(obj) {
 
 function clear_cur_year() {
     cur_year = "";
-    year_title.year="Year"
+    year_title.year = "Year"
 }
 
 function click_home() {
@@ -163,7 +205,7 @@ function click_home() {
 
 function click_page() {
     var page_ = $(this).attr("name");
-    render_video_list(cur_category,cur_year,page_);
+    render_video_list(cur_category, cur_year, page_);
 }
 function click_pagination() {
     text = $(this).text();
@@ -195,29 +237,22 @@ $(function () {
         $("#goto-menue").append(item);
     }
 
-    // $("button[name='search']").click(function () {
-        $("#search-form").submit(function(e) {
-            var url = api_video_list_url; // the script where you handle the form input.
-            data = $("#search-form").serialize();
-            console.log(data);
-            data += "&year="+cur_year;
-            data += "&category="+cur_category;
-            $.ajax({
-                type: "GET",
-                url: url,
-                data:data, // serializes the form's elements.
-                success: function(result)
-                {
-                    var html = template("video-list-template", {
-                        videos: result.results,
-                        server_url: server_url
-                    });
-                    sel_video_list.html(html);
-                }
-            });
-            e.preventDefault(); // avoid to execute the actual submit of the form.
+    $("#search-form").submit(function (e) {
+        var url = api_video_list_url; // the script where you handle the form input.
+        data = $("#search-form").serialize();
+        console.log(data);
+        data += "&year=" + cur_year;
+        data += "&category=" + cur_category;
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: data, // serializes the form's elements.
+            success: function (result) {
+                handle_result(result);
+            }
         });
-    // });
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+    });
 
     render_category_list();
     // render_video_list();

@@ -67,7 +67,7 @@
                     <span class="icon-bar"></span>
                 </a>
             </div>
-            <div class="nav navbar-nav">
+            <div class="nav navbar-nav" id="nav-title">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false" id="year-title">{{year}}<span
                             class="caret"></span></a>
@@ -77,16 +77,13 @@
                         <!--{% endfor %}-->
                     </ul>
                 </li>
+                <li id="nav-refresh" v-if="video_id"><a href="javascript:void(0);" :video-id="video_id"
+                                                        onclick="click_refresh(this)"><i class="fa fa-refresh"
+                                                                                         aria-hidden="true"></i></a>
+                </li>
             </div>
-
             <div class="navbar-custom-menu">
                 <ul class="nav navbar-nav">
-                    <!-- Messages: style can be found in dropdown.less-->
-
-                    <!-- Notifications: style can be found in dropdown.less -->
-
-                    <!-- Tasks: style can be found in dropdown.less -->
-
                     <li>
                         <a href="javascript:void(0);" name="breadcrumb-home">Home</a>
                     </li>
@@ -111,7 +108,7 @@
                             <!-- Menu Footer-->
                             <li class="user-footer">
                                 <div class="pull-left">
-                                    <!--<a href="{% url 'admin:index" class="btn btn-default btn-flat">Settings</a>-->
+                                    <a href="http://localhost:8000/admin" class="btn btn-default btn-flat">Settings</a>
                                 </div>
                                 <div class="pull-right">
                                     <!--<a href="{% url 'vod:logout" class="btn btn-default btn-flat">Sign out</a>-->
@@ -166,6 +163,15 @@
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper" id="content-field">
         <section id="breadcrumb-list" class="content-header">
+            <h1>
+                {{ title }}<span v-if="year"><i class="fa fa-fw fa-angle-right"></i>{{ year }} </span>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="#" name="breadcrumb-home" onclick="click_home()"><i class="fa fa-dashboard"></i> Home</a>
+                </li>
+                <li v-if="title != 'Home'"><a href="#" onclick="click_more(this)" :name="title">{{ title }}</a></li>
+                <li v-if="video"><a href="#">{{ video }}</a></li>
+            </ol>
         </section>
         <!-- Main content -->
         <section class="content">
@@ -245,7 +251,7 @@
     {{each videos video key}}
     <div class="col-xs-4 col-md-3 col-lg-2 each-video">
         <div class="panel panel-default " style="border: 0px">
-            <a href='#'>
+            <a href='javascript:void(0);' name="video" video-id="{{video.id}}" onclick="click_video(this)">
                 <img src="{{server_url}}{{ video.image}}" width="100%"
                      height="auto"/>
                 <span class="video-resolution-text">{{ video.definition }}</span>
@@ -272,11 +278,11 @@
             <li><a href='javascript:void(0);' name="1">First</a></li>
 
             {{ each page_range page key}}
-                {{ if page == cur_page }}
-                    <li class="active"><a href='javascript:void(0);' name="{{page}}">{{ page }}</a></li>
-                {{ else }}
-                    <li><a href='javascript:void(0);' name="{{page}}">{{ page }}</a></li>
-                {{/if}}
+            {{ if page == cur_page }}
+            <li class="active"><a href='javascript:void(0);' name="{{page}}">{{ page }}</a></li>
+            {{ else }}
+            <li><a href='javascript:void(0);' name="{{page}}">{{ page }}</a></li>
+            {{/if}}
             {{/each}}
 
             <li><a href='javascript:void(0);' name="{{num_pages}}">Last</a></li>
@@ -335,7 +341,7 @@
                 {{each category.videos video key}}
                 <div class="col-xs-4 col-md-2 col-lg-2 each-video">
                     <div class="panel panel-default " style="border: 0px">
-                        <a href='#'>
+                        <a href='javascript:void(0);' name="video" video-id="{{video.id}}" onclick="click_video(this)">
                             <img src="{{server_url}}{{ video.image}}" width="100%"
                                  height="auto"/>
                             <span class="video-resolution-text">{{ video.definition }}</span>
@@ -366,6 +372,40 @@
         {{/if}}
     </ol>
 </template>
+
+<template id="video-detail-template">
+    <div class="jumbotron" style="background: transparent;">
+        <div class="container">
+            <div class="row">
+
+                <div class="col-md-12">
+                    <div class="panel">
+                        <div class="panel-body">
+                            <video class='video-js vjs-default-skin' width="100%" height="100%"
+                                   controls>
+                                <!-- preload="auto" -->
+                                <source src="{{ video.video }}" type="video/mp4">
+                            </video>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 col-xs-12 col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading text-center">
+                            <h4 style="display: inline">Description</h4>
+                            <span class="pull-right" style="color: #666">{{ video.view_count }} views</span>
+                        </div>
+                        <div class="panel-body">
+                            <span>{{ video.description }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
 <script src="resource/js/app.js"></script>
 
 </body>
