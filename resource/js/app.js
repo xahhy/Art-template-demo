@@ -23,7 +23,7 @@ var refresh_btn = new Vue({
     el: "#nav-refresh",
     data: {
         video_id: "",
-        see :false
+        see: false
     }
 });
 var bread_crumb = new Vue({
@@ -50,13 +50,15 @@ function render_category_list() {
 
 function render_video_detail(video_id) {
     var url = api_base_url + video_id;
-    $.getJSON(url, {'format':'json'}, function (result) {
+    $.getJSON(url, {'format': 'json'}, function (result) {
         console.log(result);
         var html = template("video-detail-template", {
             video: result
         });
         sel_video_list.html(html);
         bread_crumb.title = result.title;
+
+        init_video(result.video, result.image);
     });
 }
 
@@ -149,6 +151,33 @@ function get_current_category() {
     console.log(cur_category_name);
     return cur_category_name;
 }
+function init_video(video_url,img_url) {
+    $("#jquery_jplayer_1").jPlayer({
+        ready: function () {
+            $(this).jPlayer("setMedia", {
+                title: "Big Buck Bunny Trailer",
+                m4v: 'http://localhost:8001/media/hhy/1.mp4',
+                flv: 'http://localhost:8001/media/hhy/1.flv',
+                // m4v: "http://www.jplayer.org/video/m4v/Big_Buck_Bunny_Trailer.m4v",
+                // ogv: "http://www.jplayer.org/video/ogv/Big_Buck_Bunny_Trailer.ogv",
+                poster: img_url
+            });
+        },
+        cssSelectorAncestor: "#jp_container_1",
+        swfPath: "bower_components/jPlayer/dist/jplayer/",
+        supplied: "m4v,flv",
+        useStateClassSkin: true,
+        autoBlur: false,
+        smoothPlayBar: true,
+        keyEnabled: true,
+        remainingDuration: true,
+        toggleDuration: true,
+        size: {
+            width: "100%", height: "720px",cssClass:"jp-video-720p"
+        }
+    });
+}
+/* Click Handlers */
 function click_category() {
     //add active class to current button
     sel_category_list.find(".active").removeClass("active");
@@ -171,7 +200,6 @@ function click_video(obj) {
     video_id = $(obj).attr("video-id");
     console.log("video id=" + video_id);
     render_video_detail(video_id);
-
     refresh_btn.video_id = video_id;
     refresh_btn.see = true;
 }
@@ -183,7 +211,7 @@ function click_year(obj) {
 }
 function click_refresh(obj) {
     cur_id = $(obj).attr("video-id");
-    console.log("cur video id="+cur_id);
+    console.log("cur video id=" + cur_id);
     render_video_detail(cur_id);
 }
 function click_more(obj) {
