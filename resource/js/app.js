@@ -156,8 +156,9 @@ function init_video(video_url,img_url) {
         ready: function () {
             $(this).jPlayer("setMedia", {
                 title: "Big Buck Bunny Trailer",
-                m4v: 'http://localhost:8001/media/hhy/1.mp4',
-                flv: 'http://localhost:8001/media/hhy/1.flv',
+                m4v: video_url,
+                // m4v: 'http://localhost:8001/media/hhy/1.mp4',
+                // flv: 'http://localhost:8001/media/hhy/1.flv',
                 // m4v: "http://www.jplayer.org/video/m4v/Big_Buck_Bunny_Trailer.m4v",
                 // ogv: "http://www.jplayer.org/video/ogv/Big_Buck_Bunny_Trailer.ogv",
                 poster: img_url
